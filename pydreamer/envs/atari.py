@@ -1,8 +1,8 @@
 import threading
 
-import gym
-import gym.envs.atari
-import gym.wrappers
+import gymnasium as gym
+import gymnasium.envs.atari
+import gymnasium.wrappers
 import numpy as np
 
 

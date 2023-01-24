@@ -2,8 +2,8 @@ import time
 from logging import exception
 from typing import Callable
 
-import gym
-import gym.spaces
+import gymnasium as gym
+import gymnasium.spaces
 import numpy as np
 
 
@@ -28,7 +28,7 @@ class TimeLimitWrapper(gym.Wrapper):
         self.time_limit = time_limit
 
     def step(self, action):
-        obs, reward, done, info = self.env.step(action)  # type: ignore
+        obs, reward, done, truncation, info = self.env.step(action)  # type: ignore
         self.step_ += 1
         if self.step_ >= self.time_limit:
             done = True
@@ -50,7 +50,9 @@ class ActionRewardResetWrapper(gym.Wrapper):
         self.action_size = env.action_space.n if hasattr(env.action_space, 'n') else env.action_space.shape[0]
 
     def step(self, action):
-        obs, reward, done, info = self.env.step(action)
+        a = self.env.step(action)
+        #print('ActionRewardResetWrapper a:{}'.format(len(a)))
+        obs, reward, done, truncation, info = self.env.step(action)
         if isinstance(action, int):
             action_vec = np.zeros(self.action_size)
             action_vec[action] = 1.0
@@ -64,7 +66,7 @@ class ActionRewardResetWrapper(gym.Wrapper):
         return obs, reward, done, info
 
     def reset(self):
-        obs = self.env.reset()
+        obs, info = self.env.reset()
         obs['action'] = np.zeros(self.action_size)
         obs['reward'] = np.array(0.0)
         obs['terminal'] = np.array(False)
@@ -80,6 +82,8 @@ class CollectWrapper(gym.Wrapper):
         self.episode = []
 
     def step(self, action):
+        a = self.env.step(action)
+        #print('CollectWrapper a:{}'.format(len(a)))
         obs, reward, done, info = self.env.step(action)
         self.episode.append(obs.copy())
         if done:
@@ -122,7 +126,7 @@ class RestartOnExceptionWrapper(gym.Wrapper):
 
     def step(self, action):
         try:
-            obs, reward, done, info = self.env.step(action)
+            obs, reward, done, truncation, info = self.env.step(action)
             self.last_obs = obs
             return obs, reward, done, info
         except:

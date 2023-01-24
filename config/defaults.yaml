@@ -48,7 +48,7 @@ defaults:
   keep_state: True
   batch_length: 48
   batch_size: 32
-  device: "cuda:0"
+  device: "cuda:1"
   grad_clip: 200
   grad_clip_ac: 200
   image_decoder_min_prob: 0
@@ -234,7 +234,7 @@ dmlab_offline:
   n_steps: 225_000
 
 vectorenv:
-  env_id: CartPole-v0
+  env_id: CartPole-v1
   action_dim: 2
   vecobs_size: 4
   image_key:
