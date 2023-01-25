@@ -2,7 +2,7 @@
 import warnings
 warnings.filterwarnings("ignore", ".*Box bound precision lowered by casting")  # gym
 
-import gymnasium as gym
+import gym
 import numpy as np
 
 from .wrappers import *

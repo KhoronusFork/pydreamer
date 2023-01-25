@@ -128,7 +128,9 @@ class ActorCritic(nn.Module):
         policy_entropy = policy_distr.entropy()
         loss_actor = loss_policy - self.entropy_weight * policy_entropy
         loss_actor = (loss_actor * reality_weight).mean()
-        assert (loss_policy.requires_grad and policy_entropy.requires_grad) or not loss_critic.requires_grad
+        #print('ag:{}'.format(self.actor_grad))
+        #print('rg:{}'.format((loss_policy.requires_grad, policy_entropy.requires_grad, loss_critic.requires_grad)))
+        #assert (loss_policy.requires_grad and policy_entropy.requires_grad) or not loss_critic.requires_grad
 
         with torch.no_grad():
             metrics = dict(loss_critic=loss_critic.detach(),

@@ -34,11 +34,9 @@ def run(conf):
     # Data directories
 
     if conf.offline_data_dir:
-        print('conf.offline_data_dir')
         online_data = False
         input_dirs = to_list(conf.offline_data_dir)
     else:
-        print('conf.online_data_dir')
         online_data = True
         input_dirs = [
             f'{artifact_uri}/episodes/{i}'
