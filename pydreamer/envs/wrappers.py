@@ -2,10 +2,9 @@ import time
 from logging import exception
 from typing import Callable
 
-import gym
-import gym.spaces
+import gymnasium as gym
+import gymnasium.spaces
 import numpy as np
-
 
 class DictWrapper(gym.ObservationWrapper):
     def __init__(self, env):
@@ -13,6 +12,7 @@ class DictWrapper(gym.ObservationWrapper):
         # self.observation_space = ...  # TODO
 
     def observation(self, obs):
+
         if isinstance(obs, dict):
             return obs  # Already a dictionary
         if len(obs.shape) == 1:

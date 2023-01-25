@@ -1,5 +1,20 @@
 # PyDreamer
 
+
+How to setup.
+python3 -m venv envdream
+source envdream/bin/activate
+
+pip install -r requirements.txt
+
+Note: Install torch separately (i.e. latest configuration)
+pip3 install torch torchvision torchaudio
+
+Run a working example.
+python launch.py --configs defaults dmc
+
+# From the original repository
+
 Reimplementation of [DreamerV2](https://danijar.com/project/dreamerv2/) model-based RL algorithm in PyTorch. 
 
 The official DreamerV2 implementation [can be found here](https://danijar.com/project/dreamerv2/).
