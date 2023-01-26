@@ -2,7 +2,12 @@
 import warnings
 warnings.filterwarnings("ignore", ".*Box bound precision lowered by casting")  # gym
 
-import gymnasium as gym
+try:
+  import gymnasium as gym
+  use_gymnasium = True
+except:
+  import gym
+  use_gymnasium = False
 import numpy as np
 
 from .wrappers import *
@@ -59,7 +64,11 @@ def create_env(env_id: str, no_terminal: bool, env_time_limit: int, env_action_r
         env_time_limit = 0  # This is handled by embodied.Env
 
     else:
-        env = gym.make(env_id)#, render_mode = 'rgb_array')
+        if use_gymnasium:
+            env = gym.make(env_id, render_mode = 'rgb_array', max_episode_steps=env_time_limit) # newer version
+        else:
+            env = gym.make(env_id)
+            env.render(mode = "rgb_array") #older version
         env = DictWrapper(env)
 
     if hasattr(env.action_space, 'n'):

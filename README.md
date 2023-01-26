@@ -16,7 +16,17 @@ pip3 install torch torchvision torchaudio
 
 Run a working example.
 ```
+python launch.py --configs defaults vectorenv
 python launch.py --configs defaults dmc
+```
+
+The current setup is defined in "config/defaults.yaml".
+The environments are defined in pydreamer/envs.__init__, with specific packages in its own class (i.e. dmc.py). wrappers.py contains the definition of classic/mujoco environments.
+
+Note: To use older version of gym
+```
+pip install gym=0.19
+pip install pyglet==1.5.27
 ```
 
 # From the original repository

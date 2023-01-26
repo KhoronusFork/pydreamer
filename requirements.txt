@@ -1,5 +1,7 @@
-gymnasium
+gymnasium[classic-control]
 dm_control
+opencv-python
+imageio
 
 # Logging
 mlflow

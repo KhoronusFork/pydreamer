@@ -9,12 +9,11 @@ from dm_control.viewer import gui
 from dm_control.viewer import renderer
 from dm_control.viewer import viewer
 
+# From dm_robotics
 _DEFAULT_WIDTH = 640
 _DEFAULT_HEIGHT = 480
 _MAX_FRONTBUFFER_SIZE = 2048
 _DEFAULT_WINDOW_TITLE = 'Rendering Observer'
-
-
 class Observer:
   """A stripped down 3D renderer for Mujoco environments.
   Attributes:
@@ -146,18 +145,10 @@ class DMC(gym.Env):
 
         # Launch the viewer application.
         # https://github.com/deepmind/dm_control/blob/main/dm_control/viewer/README.md
-        print('viewer')
-        self.observer = Observer(self._env, 640, 480, 'viewobs')
-        self.observer.begin_episode()
-        #initial_camera_cfg = {
-        #        'distance': 1.0,
-        #        'azimuth': 30.0,
-        #        'elevation': -45.0,
-        #        'lookat': [0.0, 0.1, 0.2],
-        #    }
-        #self.observer.camera_config = initial_camera_cfg
-        #self.observer._viewer.camera.settings.lookat = np.zeros(3)
-        print('viewer done')
+        self.observer = None
+        if True: # Set to true to render the scene
+            self.observer = Observer(self._env, 640, 480, 'viewobs')
+            self.observer.begin_episode()
 
         self._action_repeat = action_repeat
         self._size = size
@@ -212,7 +203,11 @@ class DMC(gym.Env):
         obs = self.observation(time_step)
         done = time_step.last()
         info = {'discount': np.array(time_step.discount, np.float32)}
-        self.observer.step()
+    
+        # render the observed scene
+        if self.observer is not None:
+            self.observer.step()
+
         return obs, reward, done, info
 
     def reset(self):

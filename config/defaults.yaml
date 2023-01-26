@@ -107,7 +107,7 @@ defaults:
   target_interval_aux: 1000
 
   # Generator
-  generator_workers: 8        # train+eval generators
+  generator_workers: 1 #8        # train+eval generators
   generator_workers_train: 0  # train-only generators
   generator_workers_eval: 0   # eval-only generators
   generator_prefill_steps: 50_000
@@ -201,8 +201,8 @@ atari:
   entropy: 0.001
 
 dmc:
-  env_id: DMC-quadruped_run
-  action_dim: 12
+  env_id: DMC-manipulator_bring_peg # DMC-walker_run #DMC-quadruped_run
+  action_dim: 5 # 6 #12
   env_time_limit: 500  # =1000/action_repeat
   env_action_repeat: 2
   generator_workers: 1
@@ -234,12 +234,13 @@ dmlab_offline:
   n_steps: 225_000
 
 vectorenv:
-  env_id: CartPole-v0
-  action_dim: 2
-  vecobs_size: 4
+  env_id: HalfCheetah-v4 #HalfCheetah-v4 #CartPole-v1
+  action_dim: 6 #6 #2
+  vecobs_size: 17 #17 #4
   image_key:
   image_encoder:
   image_decoder:
+  env_time_limit: 500
 
 minecraft:
   env_id: Embodied-minecraft_diamond

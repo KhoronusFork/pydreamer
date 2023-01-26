@@ -2,8 +2,15 @@ import time
 from logging import exception
 from typing import Callable
 
-import gymnasium as gym
-import gymnasium.spaces
+try:
+    import gymnasium as gym
+    import gymnasium.spaces
+    use_gymnasium = True
+    import cv2
+except:
+    import gym
+    import gym.spaces
+    use_gymnasium = False
 import numpy as np
 
 class DictWrapper(gym.ObservationWrapper):
@@ -12,6 +19,14 @@ class DictWrapper(gym.ObservationWrapper):
         # self.observation_space = ...  # TODO
 
     def observation(self, obs):
+
+        # visualize (debug)
+        if use_gymnasium:
+            frame = self.env.render()
+            cv2.imshow('DictWrapper', frame)
+            cv2.waitKey(1)
+        else:
+            self.env.render()
 
         if isinstance(obs, dict):
             return obs  # Already a dictionary
@@ -28,12 +43,21 @@ class TimeLimitWrapper(gym.Wrapper):
         self.time_limit = time_limit
 
     def step(self, action):
-        obs, reward, done, info = self.env.step(action)  # type: ignore
+        if use_gymnasium:
+            truncation = 0
+            res = self.env.step(action)  # type: ignore
+            if len(res) == 4:
+                obs, reward, done, info = res
+            else:
+                obs, reward, done, truncation, info = res
+        else:
+            obs, reward, done, info = self.env.step(action)  # type: ignore
         self.step_ += 1
         if self.step_ >= self.time_limit:
             done = True
             info['time_limit'] = True
-        return obs, reward, done, info
+        #return obs, reward, done, info
+        return obs, reward, done, truncation, info
 
     def reset(self):
         self.step_ = 0
@@ -50,11 +74,18 @@ class ActionRewardResetWrapper(gym.Wrapper):
         self.action_size = env.action_space.n if hasattr(env.action_space, 'n') else env.action_space.shape[0]
 
     def step(self, action):
-        obs, reward, done, info = self.env.step(action)
-        if isinstance(action, int):
+        #print('action:{} type:{}'.format(action, type(action)))
+        if use_gymnasium:
+            obs, reward, done, truncation, info = self.env.step(action)
+        else:
+            obs, reward, done, info = self.env.step(action)
+        if isinstance(action, int) or isinstance(action, np.int64):
             action_vec = np.zeros(self.action_size)
             action_vec[action] = 1.0
+        elif isinstance(action, np.ndarray):
+            action_vec = action
         else:
+            #print('v:{}'.format((isinstance(action, np.ndarray), action.shape, (self.action_size,))))
             assert isinstance(action, np.ndarray) and action.shape == (self.action_size,), "Wrong one-hot action shape"
             action_vec = action
         obs['action'] = action_vec
@@ -64,7 +95,15 @@ class ActionRewardResetWrapper(gym.Wrapper):
         return obs, reward, done, info
 
     def reset(self):
-        obs = self.env.reset()
+        if use_gymnasium:
+            res = self.env.reset()
+            if isinstance(res, dict):
+                obs = res
+            else:
+                obs = res[0]
+                inf = res[1]
+        else:
+            obs = self.env.reset()
         obs['action'] = np.zeros(self.action_size)
         obs['reward'] = np.array(0.0)
         obs['terminal'] = np.array(False)
