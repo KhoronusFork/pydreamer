@@ -12,6 +12,12 @@ from .functions import *
 from .common import *
 
 
+import sys
+sys.path.append('/home/moro/workspace/organizations/RTPlayground/dlf_tf')
+from dlf_tf import TFNet
+from dlf_tf.utils import *
+
+
 class RSSMCore(nn.Module):
 
     def __init__(self, embed_dim, action_dim, deter_dim, stoch_dim, stoch_discrete, hidden_dim, gru_layers, gru_type, layer_norm):
@@ -104,7 +110,26 @@ class RSSMCell(nn.Module):
         self.a_mlp = nn.Linear(action_dim, hidden_dim, bias=False)  # No bias, because outputs are added
         self.in_norm = norm(hidden_dim, eps=1e-3)
 
-        self.gru = rnn.GRUCellStack(hidden_dim, deter_dim, gru_layers, gru_type)
+        #print('rnn.GRUCellStack')
+        #print('hidden_dim, deter_dim, gru_layers, gru_type:{}'.format((hidden_dim, deter_dim, gru_layers, gru_type)))
+        self.rnnmodel = rnn.GRUCellStack(hidden_dim, deter_dim, gru_layers, gru_type)
+        count_parameters(self.rnnmodel)
+        sys_order = 2
+        num_head = 1000#200
+        num_layers = 1
+        L = 1
+        Features = hidden_dim
+        period = L if L > sys_order else sys_order + 1
+        bidirectional = False
+        jitter = 0.00     
+        FeaturesOut = deter_dim # 2048
+        sys_order_expected = FeaturesOut / (num_head * num_layers) # 2048 FeaturesOut in dreamer
+        print('sys_order_expected:{}'.format(sys_order_expected))
+        sys_order = int(sys_order_expected)
+        print('sys_order:{}'.format(sys_order))
+        print('TFNet')
+        #self.rnnmodel = TFNet(input_size = Features, sys_order = sys_order, num_head = num_head, output_size = FeaturesOut, period = period, num_layers = num_layers, bidirectional = bidirectional, jitter = jitter)
+        #count_parameters(self.rnnmodel)
 
         self.prior_mlp_h = nn.Linear(deter_dim, hidden_dim)
         self.prior_norm = norm(hidden_dim, eps=1e-3)
@@ -116,7 +141,7 @@ class RSSMCell(nn.Module):
         self.post_mlp = nn.Linear(hidden_dim, stoch_dim * (stoch_discrete or 2))
 
     def init_state(self, batch_size):
-        device = next(self.gru.parameters()).device
+        device = next(self.rnnmodel.parameters()).device
         return (
             torch.zeros((batch_size, self.deter_dim), device=device),
             torch.zeros((batch_size, self.stoch_dim * (self.stoch_discrete or 1)), device=device),
@@ -130,6 +155,8 @@ class RSSMCell(nn.Module):
                 ) -> Tuple[Tensor,
                            Tuple[Tensor, Tensor]]:
 
+        #print('forward action:{} embed:{} in_state:{}'.format(action.shape, embed.shape, len(in_state)))
+        #print('forward action:{}'.format(action.shape))
         in_h, in_z = in_state
         in_h = in_h * reset_mask
         in_z = in_z * reset_mask
@@ -138,7 +165,19 @@ class RSSMCell(nn.Module):
         x = self.z_mlp(in_z) + self.a_mlp(action)  # (B,H)
         x = self.in_norm(x)
         za = F.elu(x)
-        h = self.gru(za, in_h)                                             # (B, D)
+
+        #import time
+        #start_time = time.time()
+        #print('forward gru za:{} in_h:{}'.format(za.shape, in_h.shape))
+        if isinstance(self.rnnmodel, TFNet):
+            h = self.rnnmodel(za.unsqueeze(1), in_h)                                             # (B, D)
+            h = h.squeeze(1)
+        else:
+            h = self.rnnmodel(za, in_h)                                             # (B, D)
+        #print("--- forward %s seconds ---" % (time.time() - start_time))        
+        #print('forward gru za:{} in_h:{} h:{}'.format(za.shape, in_h.shape, h.shape))
+        #res_cuda = next(self.rnnmodel.parameters()).is_cuda
+        #print('res_cuda:{}'.format(res_cuda))
 
         x = self.post_mlp_h(h) + self.post_mlp_e(embed)
         x = self.post_norm(x)
@@ -159,6 +198,7 @@ class RSSMCell(nn.Module):
                       ) -> Tuple[Tensor,
                                  Tuple[Tensor, Tensor]]:
 
+        #print('forward_prior action:{} in_state:{}'.format(action.shape, len(in_state)))
         in_h, in_z = in_state
         if reset_mask is not None:
             in_h = in_h * reset_mask
@@ -169,7 +209,19 @@ class RSSMCell(nn.Module):
         x = self.z_mlp(in_z) + self.a_mlp(action)  # (B,H)
         x = self.in_norm(x)
         za = F.elu(x)
-        h = self.gru(za, in_h)                  # (B, D)
+
+        #import time
+        #start_time = time.time()
+        #print('forward prior gru za:{} in_h:{}'.format(za.shape, in_h.shape))
+        if isinstance(self.rnnmodel, TFNet):
+            h = self.rnnmodel(za.unsqueeze(1), in_h)                                             # (B, D)
+            h = h.squeeze(1)
+        else:
+            h = self.rnnmodel(za, in_h)                                             # (B, D)
+        #print("--- forward prior %s seconds ---" % (time.time() - start_time))        
+        #print('forward prior gru za:{} in_h:{} h:{}'.format(za.shape, in_h.shape, h.shape))
+        #res_cuda = next(self.rnnmodel.parameters()).is_cuda
+        #print('res_cuda:{}'.format(res_cuda))
 
         x = self.prior_mlp_h(h)
         x = self.prior_norm(x)

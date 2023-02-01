@@ -20,6 +20,9 @@ class Dreamer(nn.Module):
 
     def __init__(self, conf):
         super().__init__()
+
+        print('Dreamer')
+  
         assert conf.action_dim > 0, "Need to set action_dim to match environment"
         features_dim = conf.deter_dim + conf.stoch_dim * (conf.stoch_discrete or 1)
         self.iwae_samples = conf.iwae_samples
