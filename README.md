@@ -13,6 +13,7 @@ Note: Install torch separately (i.e. latest configuration)
 ```
 pip3 install torch torchvision torchaudio
 ```
+Note: Clone dlf and dlf_tf in sigpro folder (check rssm.py for path information).
 
 Run a working example.
 ```

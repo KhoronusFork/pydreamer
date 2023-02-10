@@ -177,6 +177,22 @@ def run(conf):
                         if conf.keep_state:
                             states[wid] = new_state
 
+                        if False:
+                            for k in obs.keys():
+                                print('obs: {} {}'.format(k, obs[k].shape))
+                            for k in range(0, len(state)):
+                                print('state: {} {}'.format(k, state[k].shape))
+                            for k in range(0, len(losses)):
+                                print('losses: {} {}'.format(k, losses[k]))
+                            for k in range(0, len(new_state)):
+                                print('new_state: {} {}'.format(k, new_state[k].shape))
+                            for k in loss_metrics.keys():
+                                print('loss_metrics: {} {}'.format(k, loss_metrics[k]))
+                            for k in tensors.keys():
+                                print('tensors: {} {}'.format(k, tensors[k].shape))
+                            for k in dream_tensors.keys():
+                                print('dream_tensors: {} {}'.format(k, dream_tensors[k].shape))
+
                 # Backward
 
                 with timer('backward'):
@@ -233,6 +249,13 @@ def run(conf):
                     # Log metrics
 
                     if steps % conf.log_interval == 0:
+
+                        for k in range(0, len(losses)):
+                            print('losses: {} {}'.format(k, losses[k]))
+                        for k in loss_metrics.keys():
+                            print('loss_metrics: {} {}'.format(k, loss_metrics[k]))
+
+
                         metrics = {f'train/{k}': np.array(v).mean() for k, v in metrics.items()}
                         metrics.update({f'train/{k}_max': np.array(v).max() for k, v in metrics_max.items()})
                         metrics['train/steps'] = steps
@@ -244,6 +267,8 @@ def run(conf):
                         fps = (steps - last_steps) / (t - last_time)
                         metrics['train/fps'] = fps
                         last_time, last_steps = t, steps
+
+                        print('metrics: {}'.format(metrics))
 
                         info(f"[{steps:06}]"
                              f"  loss_model: {metrics.get('train/loss_model', 0):.3f}"

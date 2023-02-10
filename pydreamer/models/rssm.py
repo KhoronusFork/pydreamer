@@ -1,5 +1,6 @@
 from typing import Any, Optional, Tuple
 
+import time
 import numpy as np
 import torch
 import torch.distributions as D
@@ -13,9 +14,11 @@ from .common import *
 
 
 import sys
-sys.path.append('/home/moro/workspace/organizations/RTPlayground/dlf_tf')
+sys.path.append('../../sigpro/dlf_tf')
 from dlf_tf import TFNet
 from dlf_tf.utils import *
+sys.path.append('../../sigpro/dlf')
+from dlf.model import *
 
 import matplotlib.pyplot as plt
 
@@ -114,23 +117,36 @@ class RSSMCell(nn.Module):
 
         #print('rnn.GRUCellStack')
         #print('hidden_dim, deter_dim, gru_layers, gru_type:{}'.format((hidden_dim, deter_dim, gru_layers, gru_type)))
-        self.rnnmodel = rnn.GRUCellStack(hidden_dim, deter_dim, gru_layers, gru_type)
+        #self.rnnmodel = rnn.GRUCellStack(hidden_dim, deter_dim, gru_layers, gru_type)
         #count_parameters(self.rnnmodel)
         sys_order = 2
-        num_head = 1000#200
-        num_layers = 2
+        num_head = 300#1000
+        num_layers = 3
         L = 1
         Features = hidden_dim
-        period = L if L > sys_order else sys_order + 1
         bidirectional = False
         jitter = 0.00     
         FeaturesOut = deter_dim # 2048
         sys_order_expected = FeaturesOut / (num_head * num_layers) # 2048 FeaturesOut in dreamer
         print('sys_order_expected:{}'.format(sys_order_expected))
         sys_order = int(sys_order_expected)
+        period = L if L > sys_order else sys_order + 1
         print('sys_order:{}'.format(sys_order))
         print('TFNet')
         #self.rnnmodel = TFNet(input_size = Features, sys_order = sys_order, num_head = num_head, output_size = FeaturesOut, period = period, num_layers = num_layers, bidirectional = bidirectional, jitter = jitter)
+        if True:
+            self.rnnmodel = DLF(input_size = Features, 
+                                output_size = FeaturesOut, 
+                                num_layers = num_layers, 
+                                bidirectional = bidirectional, 
+                                block=dict(
+                                    type='ActivationBlock',
+                                    kwargs=dict(
+                                        filter=dict(
+                                            type='PCLinearFilter', 
+                                            kwargs = dict(
+                                            sys_order = sys_order, 
+                                            num_head = num_head, period = period)))))
         #count_parameters(self.rnnmodel)
         # Plot generator
         self.do_plot = False
@@ -185,13 +201,14 @@ class RSSMCell(nn.Module):
 
         #import time
         #start_time = time.time()
-        #print('forward gru za:{} in_h:{}'.format(za.shape, in_h.shape))
-        if isinstance(self.rnnmodel, TFNet):
+        #print('forward za:{} in_h:{}'.format(za.shape, in_h.shape))
+        if isinstance(self.rnnmodel, TFNet) or isinstance(self.rnnmodel, DLF):
             h = self.rnnmodel(za.unsqueeze(1), in_h)                                             # (B, D)
             h = h.squeeze(1)
             #h = (h/torch.max(torch.abs(h)))   # [-1, 1]
         else:
             h = self.rnnmodel(za, in_h)                                             # (B, D)
+            time.sleep(1.0/1000000.0*2500.0)
         #print("--- forward %s seconds ---" % (time.time() - start_time))        
         #print('forward gru za:{} in_h:{} h:{}'.format(za.shape, in_h.shape, h.shape))
         #res_cuda = next(self.rnnmodel.parameters()).is_cuda
@@ -259,13 +276,14 @@ class RSSMCell(nn.Module):
 
         #import time
         #start_time = time.time()
-        #print('forward prior gru za:{} in_h:{}'.format(za.shape, in_h.shape))
-        if isinstance(self.rnnmodel, TFNet):
+        #print('forward prior za:{} in_h:{}'.format(za.shape, in_h.shape))
+        if isinstance(self.rnnmodel, TFNet) or isinstance(self.rnnmodel, DLF):
             h = self.rnnmodel(za.unsqueeze(1), in_h)                                             # (B, D)
             h = h.squeeze(1)
             #h = (h/torch.max(torch.abs(h)))   # [-1, 1]
         else:
             h = self.rnnmodel(za, in_h)                                             # (B, D)
+            time.sleep(1.0/1000000.0*2500.0)
         #print("--- forward prior %s seconds ---" % (time.time() - start_time))        
         #print('forward prior gru za:{} in_h:{} h:{}'.format(za.shape, in_h.shape, h.shape))
         #res_cuda = next(self.rnnmodel.parameters()).is_cuda
