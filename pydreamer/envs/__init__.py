@@ -28,11 +28,16 @@ def create_env(env_id: str, no_terminal: bool, env_time_limit: int, env_action_r
         env = Atari(env_id.split('-')[1].lower(), action_repeat=env_action_repeat, grayscale=True)
 
     elif env_id.startswith('MiniWorld-'):
-        import gym_miniworld.wrappers as wrap
-        env = gym.make(env_id)
-        env = wrap.DictWrapper(env)
-        env = wrap.MapWrapper(env)
-        env = wrap.AgentPosWrapper(env)
+        import miniworld
+        #import gym_miniworld.wrappers as wrap
+        #print('env_id:{}'.format(env_id))
+        #env = gym.make('MiniWorld-Hallway-v0', view='agent', render_mode="human")
+        #env = gym.make('MiniWorld-Hallway-v0')#env_id)
+        env = gym.make(env_id, render_mode = 'rgb_array')
+        env = DictWrapper(env)
+        #env = wrap.DictWrapper(env)
+        #env = wrap.MapWrapper(env)
+        #env = wrap.AgentPosWrapper(env)
         if env_id.startswith('MiniWorld-ScavengerHunt'):
             env = wrap.GoalPosWrapper(env)
             env = wrap.GoalVisibleWrapper(env)
@@ -68,6 +73,7 @@ def create_env(env_id: str, no_terminal: bool, env_time_limit: int, env_action_r
             env = gym.make(env_id, render_mode = 'rgb_array', max_episode_steps=env_time_limit) # newer version
         else:
             env = gym.make(env_id)
+            env.reset()
             env.render(mode = "rgb_array") #older version
         env = DictWrapper(env)
 

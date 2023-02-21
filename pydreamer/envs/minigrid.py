@@ -1,11 +1,19 @@
 from typing import Tuple
 
-import gym
-import gym.spaces
-import gym_minigrid
-import gym_minigrid.envs
-import gym_minigrid.minigrid
-from gym_minigrid.minigrid import COLOR_TO_IDX, OBJECT_TO_IDX
+#import gym
+#import gym.spaces
+#import gym_minigrid
+#import gym_minigrid.envs
+#import gym_minigrid.minigrid
+#from gym_minigrid.minigrid import COLOR_TO_IDX, OBJECT_TO_IDX
+
+import gymnasium as gym
+
+from minigrid.minigrid_env import MiniGridEnv
+from minigrid.utils.window import Window
+from minigrid.wrappers import ImgObsWrapper, RGBImgPartialObsWrapper
+from minigrid.core.constants import COLOR_TO_IDX, OBJECT_TO_IDX
+
 import numpy as np
 
 
@@ -58,8 +66,9 @@ class MiniGrid(gym.Env):
     ])
 
     def __init__(self, env_name, max_steps=500, seed=None, agent_init_pos=None, agent_init_dir=0):
-        env = gym.make(env_name)
-        assert isinstance(env, gym_minigrid.envs.MiniGridEnv)
+        env = gym.make(env_name, render_mode = 'rgb_array')
+        #assert isinstance(env, gym_minigrid.envs.MiniGridEnv)
+        #assert isinstance(env, gym.envs.MiniGridEnv)
         self.env = env
         self.env.max_steps = max_steps
         if seed:
@@ -91,11 +100,11 @@ class MiniGrid(gym.Env):
         return False
 
     def step(self, action):
-        obs, reward, done, info = self.env.step(action)
+        obs, reward, done, trunc, info = self.env.step(action)
         return self.observation(obs), reward, done, info
 
     def reset(self):
-        obs = self.env.reset()
+        obs, inf = self.env.reset()
         if self.agent_init_pos:
             # Initialize agent in a fixed position, so it can build a map
             self.env.agent_pos = np.array(self.agent_init_pos)
@@ -107,6 +116,9 @@ class MiniGrid(gym.Env):
 
     def observation(self, obs_in):
         img = obs_in['image']
+        import cv2
+        cv2.imshow('observation', img)
+        cv2.waitKey(1)
 
         obs = {}
         obs['image'] = self.to_categorical(img)

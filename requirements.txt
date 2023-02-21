@@ -2,9 +2,12 @@ gymnasium[classic-control]
 dm_control
 opencv-python
 imageio
-
+einops
+opt_einsum
+prettytable
 # Logging
 mlflow
+hydra-core
 #google.cloud.storage
 # azure-storage-blob
 
@@ -18,3 +21,8 @@ mlflow
 # dm-env
 # dm-env-rpc==1.0.6
 # grpcio
+
+# Environments
+minigrid
+miniworld
+git+https://github.com/RTPlayground/memory-maze.git

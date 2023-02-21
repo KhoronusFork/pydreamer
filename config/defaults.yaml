@@ -120,7 +120,7 @@ defaults:
   env_no_terminal: False
 
 minigrid:
-  env_id: MiniGrid-MazeS11N-v0
+  env_id: MiniGrid-Empty-8x8-v0 #MiniGrid-MazeS11N-v0
   # Features
   image_key: image
   image_size: 7
@@ -142,7 +142,7 @@ minigrid:
 
 miniworld:
   # Env
-  env_id: MiniWorld-ScavengerHuntSmall-v0
+  env_id: MiniWorld-Hallway-v0 #MiniWorld-ScavengerHuntSmall-v0
   env_no_terminal: True
   map_size: 9
   map_channels: 14
@@ -160,7 +160,7 @@ miniworld:
   cnn_depth: 32
   data_workers: 6
 
-miniworld_offline:
+miniworld_offline: # NG
   # Env
   env_id: MiniWorld-ScavengerHuntSmall-v0
   env_no_terminal: True
@@ -185,7 +185,7 @@ miniworld_offline:
   terminal_decoder_layers: 1  # faster
   imag_horizon: 1  # faster
 
-atari:
+atari: #NG
   n_env_steps: 200_000_000
   # Env
   env_id: Atari-Pong
@@ -212,19 +212,19 @@ dmc:
   actor_dist: tanh_normal
   clip_rewards: tanh
 
-dmlab:
+dmlab: # NG
   env_id: DmLab-rooms_watermaze
   action_dim: 15
   env_action_repeat: 4
   env_no_terminal: True
   kl_weight: 3.0
 
-dmmemory:
+dmmemory: # NG
   env_id: DMM-spot_diff_passive_train
   action_dim: 9
   kl_weight: 3.0
 
-dmlab_offline:
+dmlab_offline: # NG
   env_id: DmLab-rooms_watermaze
   action_dim: 15
   env_action_repeat: 4
@@ -254,7 +254,7 @@ memmaze:
   action_dim: 6
   entropy: 0.001
 
-procgen:
+procgen: # older gym
   env_id: procgen:procgen-coinrun-v0
   action_dim: 15
   kl_weight: 0.1

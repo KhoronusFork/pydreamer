@@ -117,7 +117,9 @@ class RSSMCell(nn.Module):
 
         #print('rnn.GRUCellStack')
         #print('hidden_dim, deter_dim, gru_layers, gru_type:{}'.format((hidden_dim, deter_dim, gru_layers, gru_type)))
-        #self.rnnmodel = rnn.GRUCellStack(hidden_dim, deter_dim, gru_layers, gru_type)
+        # GRU
+        self.rnnmodel = rnn.GRUCellStack(hidden_dim, deter_dim, gru_layers, gru_type)
+        # DLF
         #count_parameters(self.rnnmodel)
         sys_order = 2
         num_head = 300#1000
@@ -134,7 +136,7 @@ class RSSMCell(nn.Module):
         print('sys_order:{}'.format(sys_order))
         print('TFNet')
         #self.rnnmodel = TFNet(input_size = Features, sys_order = sys_order, num_head = num_head, output_size = FeaturesOut, period = period, num_layers = num_layers, bidirectional = bidirectional, jitter = jitter)
-        if True:
+        if False:
             self.rnnmodel = DLF(input_size = Features, 
                                 output_size = FeaturesOut, 
                                 num_layers = num_layers, 

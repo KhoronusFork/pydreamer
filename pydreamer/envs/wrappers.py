@@ -23,8 +23,9 @@ class DictWrapper(gym.ObservationWrapper):
         # visualize (debug)
         if use_gymnasium:
             frame = self.env.render()
-            cv2.imshow('DictWrapper', frame)
-            cv2.waitKey(1)
+            if frame is not None:
+                cv2.imshow('DictWrapper', frame)
+                cv2.waitKey(1)
         else:
             self.env.render()
 
@@ -76,7 +77,13 @@ class ActionRewardResetWrapper(gym.Wrapper):
     def step(self, action):
         #print('action:{} type:{}'.format(action, type(action)))
         if use_gymnasium:
-            obs, reward, done, truncation, info = self.env.step(action)
+            res = self.env.step(action)
+            if len(res) == 5:
+                obs, reward, done, truncation, info = res
+            elif len(res) == 4:
+                obs, reward, done, info = res
+            else:
+                print('ActionRewardResetWrapper step unknown size:{}'.format(len(res)))
         else:
             obs, reward, done, info = self.env.step(action)
         if isinstance(action, int) or isinstance(action, np.int64):

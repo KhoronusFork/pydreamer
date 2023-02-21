@@ -1,34 +1,56 @@
 # PyDreamer
 
+Modified PyDreamer code based on DreamerV2 (model-based RL algorithm in PyTorch). 
 
-How to setup.
-python3 -m venv envdream
-source envdream/bin/activate
-
+## How to setup 
+Install conda environment  
 ```
+conda create --name mlenv python=3.10  
+conda activate mlenv  
+python3 -m venv envdream  
+source envdream/bin/activate  
+```
+Clone the project  
+https://github.com/RTPlayground/pydreamer
+```
+cd pydreamer
 pip install -r requirements.txt
 ```
 
-Note: Install torch separately (i.e. latest configuration)
+---
+***NOTE***  
+Install torch separately (i.e. latest configuration)
 ```
 pip3 install torch torchvision torchaudio
 ```
-Note: Clone dlf and dlf_tf in sigpro folder (check rssm.py for path information).
+When a new bash is opened.  
+```
+conda activate mlenv  
+source envdream/bin/activate  
+```
+Clone dlf and dlf_tf in sigpro folder (check rssm.py for path information).  
+The current setup is defined in "config/defaults.yaml".  
+The environments are defined in pydreamer/envs.__init__, with specific packages in its own class (i.e. dmc.py). wrappers.py contains the definition of classic/mujoco environments.
 
-Run a working example.
+FYI: Older version of gym (no longer supported in this repository) [gym=0.19, pyglet==1.5.27]  
+
+---
+
+### Additional Environments (modified for gymnasium)
+Memmaze
+If it is not installed automatically, please clone and install a modified version of memmaze
+```
+https://github.com/RTPlayground/memory-maze
+```
+
+### Run a working example
 ```
 python launch.py --configs defaults vectorenv
 python launch.py --configs defaults dmc
+python launch.py --configs defaults memmaze
+python launch.py --configs defaults miniworld
 ```
-
-The current setup is defined in "config/defaults.yaml".
-The environments are defined in pydreamer/envs.__init__, with specific packages in its own class (i.e. dmc.py). wrappers.py contains the definition of classic/mujoco environments.
-
-Note: To use older version of gym
-```
-pip install gym=0.19
-pip install pyglet==1.5.27
-```
+***Note*** python launch.py --configs defaults minigrid  # NOT WORKING YET
 
 # From the original repository
 

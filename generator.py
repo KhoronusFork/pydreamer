@@ -23,7 +23,6 @@ from pydreamer.models.functions import map_structure
 from pydreamer.preprocessing import Preprocessor
 from pydreamer.tools import *
 
-
 def main(env_id='MiniGrid-MazeS11N-v0',
          save_uri=None,
          save_uri2=None,
