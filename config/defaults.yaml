@@ -147,6 +147,7 @@ miniworld:
   map_size: 9
   map_channels: 14
   action_dim: 3
+  env_time_limit: 1_000
   # Features
   image_key: image
   image_size: 64
