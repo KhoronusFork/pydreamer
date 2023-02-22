@@ -50,7 +50,8 @@ python launch.py --configs defaults dmc
 python launch.py --configs defaults memmaze
 python launch.py --configs defaults miniworld
 ```
-***Note*** python launch.py --configs defaults minigrid  # NOT WORKING YET
+***Note1*** memmaze does not work on Windows  
+***Note2*** python launch.py --configs defaults minigrid  # NOT WORKING YET  
 
 # From the original repository
 

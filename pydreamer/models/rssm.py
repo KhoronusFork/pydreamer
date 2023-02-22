@@ -12,13 +12,16 @@ from . import rnn
 from .functions import *
 from .common import *
 
+try:
+    import sys
+    sys.path.append('../../sigpro/dlf_tf')
+    from dlf_tf import TFNet
+    from dlf_tf.utils import *
+    sys.path.append('../../sigpro/dlf')
+    from dlf.model import *
+except ImportError:
+    print('DLF library not found')
 
-import sys
-sys.path.append('../../sigpro/dlf_tf')
-from dlf_tf import TFNet
-from dlf_tf.utils import *
-sys.path.append('../../sigpro/dlf')
-from dlf.model import *
 
 import matplotlib.pyplot as plt
 
