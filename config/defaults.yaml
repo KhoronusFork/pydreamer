@@ -48,7 +48,7 @@ defaults:
   keep_state: True
   batch_length: 48
   batch_size: 32 #32
-  device: "cuda:0"
+  device: "cuda:1"
   grad_clip: 200
   grad_clip_ac: 200
   image_decoder_min_prob: 0
@@ -160,6 +160,7 @@ miniworld:
   probe_model: goals
   cnn_depth: 32
   data_workers: 6
+  device: "cuda:1"
 
 miniworld_offline: # NG
   # Env
@@ -212,6 +213,7 @@ dmc:
   actor_grad: dynamics
   actor_dist: tanh_normal
   clip_rewards: tanh
+  device: "cuda:1"
 
 dmlab: # NG
   env_id: DmLab-rooms_watermaze
@@ -254,7 +256,8 @@ memmaze:
   env_id: memory_maze:MemoryMaze-9x9-v0
   action_dim: 6
   entropy: 0.001
-
+  device: "cuda:1"
+  
 procgen: # older gym
   env_id: procgen:procgen-coinrun-v0
   action_dim: 15

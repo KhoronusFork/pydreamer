@@ -14,9 +14,9 @@ from .common import *
 
 try:
     import sys
-    sys.path.append('../../sigpro/dlf_tf')
-    from dlf_tf import TFNet
-    from dlf_tf.utils import *
+    #sys.path.append('../../sigpro/dlf_tf')
+    #from dlf_tf import TFNet
+    #from dlf_tf.utils import *
     sys.path.append('../../sigpro/dlf')
     from dlf.model import *
 except ImportError:
@@ -120,24 +120,58 @@ class RSSMCell(nn.Module):
 
         #print('rnn.GRUCellStack')
         #print('hidden_dim, deter_dim, gru_layers, gru_type:{}'.format((hidden_dim, deter_dim, gru_layers, gru_type)))
+        #exit(0)
         # GRU
-        self.rnnmodel = rnn.GRUCellStack(hidden_dim, deter_dim, gru_layers, gru_type)
+        #self.rnnmodel = rnn.GRUCellStack(hidden_dim, deter_dim, gru_layers, gru_type)
+
         # DLF
         #count_parameters(self.rnnmodel)
-        sys_order = 2
-        num_head = 300#1000
+        #sys_order = 2
+        #num_head = 300#1000
+        #num_layers = 3
+        #L = 1
+        #Features = hidden_dim
+        #bidirectional = False
+        #jitter = 0.00     
+        #FeaturesOut = deter_dim # 2048
+        #sys_order_expected = FeaturesOut / (num_head * num_layers) # 2048 FeaturesOut in dreamer
+        #print('sys_order_expected:{}'.format(sys_order_expected))
+        #sys_order = int(sys_order_expected)
+        #period = L if L > sys_order else sys_order + 1
+        #print('sys_order:{}'.format(sys_order))
+        #print('TFNet')
+
+        print('hidden_dim:{} deter_dim:{}'.format(hidden_dim, deter_dim))
+
+        sys_order = 3
+        num_head = 160
+        Features = hidden_dim # input_size
+        FeaturesOut = deter_dim # output_size
         num_layers = 3
-        L = 1
-        Features = hidden_dim
         bidirectional = False
-        jitter = 0.00     
-        FeaturesOut = deter_dim # 2048
         sys_order_expected = FeaturesOut / (num_head * num_layers) # 2048 FeaturesOut in dreamer
         print('sys_order_expected:{}'.format(sys_order_expected))
         sys_order = int(sys_order_expected)
-        period = L if L > sys_order else sys_order + 1
         print('sys_order:{}'.format(sys_order))
-        print('TFNet')
+        if True:
+            self.rnnmodel = DLF(input_size = Features, 
+                                output_size = FeaturesOut, 
+                                num_layers = num_layers, 
+                                bidirectional = bidirectional, 
+                                block=dict(
+                                    type='ActivationBlock',
+                                    kwargs=dict(
+                                        filter=dict(
+                                            type='PolyCoef', 
+                                            kwargs = dict(
+                                            sys_order = sys_order, 
+                                            num_head = num_head)))))
+            #self.h_dlf = dict()
+            #for i in range(0, num_layers):
+            #    self.h_dlf['layer_' + str(i)] = torch.rand(1, sys_order*num_head).to('cuda:0')
+            #print('self.rnnmodel:{}'.format(next(self.rnnmodel.parameters()).device))
+            self.h_dlf = dict([(f'layer_{str(i)}', torch.rand(32, 1, sys_order*num_head).to('cuda:0')) for i in range(0, num_layers)])
+
         #self.rnnmodel = TFNet(input_size = Features, sys_order = sys_order, num_head = num_head, output_size = FeaturesOut, period = period, num_layers = num_layers, bidirectional = bidirectional, jitter = jitter)
         if False:
             self.rnnmodel = DLF(input_size = Features, 
@@ -195,6 +229,7 @@ class RSSMCell(nn.Module):
 
         #print('forward action:{} embed:{} in_state:{}'.format(action.shape, embed.shape, len(in_state)))
         #print('forward action:{}'.format(action.shape))
+        #print('in_state I:{} H:{}'.format(in_state[0].shape, in_state[1].shape))
         in_h, in_z = in_state
         in_h = in_h * reset_mask
         in_z = in_z * reset_mask
@@ -207,8 +242,34 @@ class RSSMCell(nn.Module):
         #import time
         #start_time = time.time()
         #print('forward za:{} in_h:{}'.format(za.shape, in_h.shape))
-        if isinstance(self.rnnmodel, TFNet) or isinstance(self.rnnmodel, DLF):
-            h = self.rnnmodel(za.unsqueeze(1), in_h)                                             # (B, D)
+        #if isinstance(self.rnnmodel, TFNet) or isinstance(self.rnnmodel, DLF):
+        if isinstance(self.rnnmodel, DLF):
+            if False:
+                if za.device != self.h_dlf['layer_0'].device: # move to CPU
+                    self.h_dlf_za = dict() # change the device of hidden state to input
+                    for k in self.h_dlf:
+                        self.h_dlf_za[k] = self.h_dlf[k].to(za.device)
+                    h = self.rnnmodel(za.unsqueeze(1), self.h_dlf_za)#in_h)                                             # (B, D)
+                else:
+                    h = self.rnnmodel(za.unsqueeze(1), self.h_dlf)#in_h)                                             # (B, D)
+            if True:
+
+                #h_0_tmp_chunk = in_h.chunk(len(self.h_dlf), -1)
+                #for i in range(0, len(self.h_dlf)):
+                #    self.h_dlf[f'layer_{str(i)}'] = torch.nn.functional.interpolate(h_0_tmp_chunk[i].unsqueeze(1), self.h_dlf[f'layer_{str(i)}'].shape[2], mode='linear')
+
+                for i in range(0, len(self.h_dlf)):
+                    if i == 0:
+                        self.h_dlf[f'layer_{str(i)}'] = torch.nn.functional.interpolate(in_h.unsqueeze(1), self.h_dlf[f'layer_{str(i)}'].shape[2], mode='linear')
+                    else:
+                        self.h_dlf[f'layer_{str(i)}'] = self.h_dlf[f'layer_0']
+
+                #self.h_in_dlf = dict()
+                #h_chunk = in_h.chunk(len(self.h_dlf), -1)
+                #print('h_chunk:{}'.format(h_chunk))
+                #for k in self.h_dlf:
+                #    self.h_in_dlf[k] = in_h
+                h = self.rnnmodel(za.unsqueeze(1), self.h_dlf)                                             # (B, D)
             h = h.squeeze(1)
             #h = (h/torch.max(torch.abs(h)))   # [-1, 1]
         else:
@@ -282,8 +343,27 @@ class RSSMCell(nn.Module):
         #import time
         #start_time = time.time()
         #print('forward prior za:{} in_h:{}'.format(za.shape, in_h.shape))
-        if isinstance(self.rnnmodel, TFNet) or isinstance(self.rnnmodel, DLF):
-            h = self.rnnmodel(za.unsqueeze(1), in_h)                                             # (B, D)
+        #if isinstance(self.rnnmodel, TFNet) or isinstance(self.rnnmodel, DLF):
+        if isinstance(self.rnnmodel, DLF):
+            if False:
+                if za.device != self.h_dlf['layer_0'].device: # move to CPU
+                    self.h_dlf_za = dict() # change the device of hidden state to input
+                    for k in self.h_dlf:
+                        self.h_dlf_za[k] = self.h_dlf[k].to(za.device)
+                    h = self.rnnmodel(za.unsqueeze(1), self.h_dlf_za)#in_h)                                             # (B, D)
+                else:
+                    h = self.rnnmodel(za.unsqueeze(1), self.h_dlf)#in_h)                                             # (B, D)
+            if True:
+                #h_0_tmp_chunk = in_h.chunk(len(self.h_dlf), -1)
+                #for i in range(0, len(self.h_dlf)):
+                #    self.h_dlf[f'layer_{str(i)}'] = torch.nn.functional.interpolate(h_0_tmp_chunk[i].unsqueeze(1), self.h_dlf[f'layer_{str(i)}'].shape[2], mode='linear')
+                #h = self.rnnmodel(za.unsqueeze(1), self.h_dlf)                                             # (B, D)
+                for i in range(0, len(self.h_dlf)):
+                    if i == 0:
+                        self.h_dlf[f'layer_{str(i)}'] = torch.nn.functional.interpolate(in_h.unsqueeze(1), self.h_dlf[f'layer_{str(i)}'].shape[2], mode='linear')
+                    else:
+                        self.h_dlf[f'layer_{str(i)}'] = self.h_dlf[f'layer_0']
+                h = self.rnnmodel(za.unsqueeze(1), self.h_dlf)                                             # (B, D)
             h = h.squeeze(1)
             #h = (h/torch.max(torch.abs(h)))   # [-1, 1]
         else:
