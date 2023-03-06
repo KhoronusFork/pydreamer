@@ -148,18 +148,19 @@ miniworld:
   map_channels: 14
   action_dim: 3
   env_time_limit: 1_000
+  generator_prefill_steps: 500  # debug
   # Features
   image_key: image
   image_size: 64
   image_channels: 3
   image_categorical: False
-  map_key: map
-  map_categorical: True
+  #map_key: map
+  map_categorical: False #True
   reward_input: True
   # Model
-  probe_model: goals
-  cnn_depth: 32
-  data_workers: 6
+  #probe_model: goals
+  #cnn_depth: 32
+  data_workers: 1
   device: "cuda:1"
 
 miniworld_offline: # NG
@@ -213,7 +214,7 @@ dmc:
   actor_grad: dynamics
   actor_dist: tanh_normal
   clip_rewards: tanh
-  device: "cuda:1"
+  device: "cuda:0"
 
 dmlab: # NG
   env_id: DmLab-rooms_watermaze
@@ -244,7 +245,7 @@ vectorenv:
   image_encoder:
   image_decoder:
   env_time_limit: 500
-  generator_prefill_steps: 50_000
+  generator_prefill_steps: 500 #50_000
 
 minecraft:
   env_id: Embodied-minecraft_diamond
@@ -253,10 +254,11 @@ minecraft:
   clip_rewards: log1p
 
 memmaze:
-  env_id: memory_maze:MemoryMaze-9x9-v0
+  env_id: memory_maze:MemoryMaze-9x9-v0 #memory_maze:MemoryMaze-9x9-v0
   action_dim: 6
   entropy: 0.001
-  device: "cuda:1"
+  device: "cuda:0"
+  generator_prefill_steps: 500 # debug
   
 procgen: # older gym
   env_id: procgen:procgen-coinrun-v0

@@ -122,7 +122,7 @@ class RSSMCell(nn.Module):
         #print('hidden_dim, deter_dim, gru_layers, gru_type:{}'.format((hidden_dim, deter_dim, gru_layers, gru_type)))
         #exit(0)
         # GRU
-        #self.rnnmodel = rnn.GRUCellStack(hidden_dim, deter_dim, gru_layers, gru_type)
+        self.rnnmodel = rnn.GRUCellStack(hidden_dim, deter_dim, gru_layers, gru_type)
 
         # DLF
         #count_parameters(self.rnnmodel)
@@ -153,7 +153,7 @@ class RSSMCell(nn.Module):
         print('sys_order_expected:{}'.format(sys_order_expected))
         sys_order = int(sys_order_expected)
         print('sys_order:{}'.format(sys_order))
-        if True:
+        if False:
             self.rnnmodel = DLF(input_size = Features, 
                                 output_size = FeaturesOut, 
                                 num_layers = num_layers, 
@@ -203,6 +203,8 @@ class RSSMCell(nn.Module):
 
 
 
+        #print('deter_dim:{}'.format(deter_dim)) 2048
+        #print('hidden_dim:{}'.format(hidden_dim)) 1000
         self.prior_mlp_h = nn.Linear(deter_dim, hidden_dim)
         self.prior_norm = norm(hidden_dim, eps=1e-3)
         self.prior_mlp = nn.Linear(hidden_dim, stoch_dim * (stoch_discrete or 2))
@@ -309,6 +311,8 @@ class RSSMCell(nn.Module):
         self.num_iterations_plot = self.num_iterations_plot + 1
 
 
+        #print('h:{}'.format(h.shape))
+        #print('embed:{}'.format(embed.shape))
         x = self.post_mlp_h(h) + self.post_mlp_e(embed)
         x = self.post_norm(x)
         post_in = F.elu(x)

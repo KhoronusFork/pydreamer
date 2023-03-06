@@ -33,7 +33,9 @@ def create_env(env_id: str, no_terminal: bool, env_time_limit: int, env_action_r
         #print('env_id:{}'.format(env_id))
         #env = gym.make('MiniWorld-Hallway-v0', view='agent', render_mode="human")
         #env = gym.make('MiniWorld-Hallway-v0')#env_id)
-        env = gym.make(env_id, render_mode = 'rgb_array')
+
+        # changed the observation size
+        env = gym.make(env_id, render_mode = 'rgb_array', obs_height = 64, obs_width = 64)
         env = DictWrapper(env)
         #env = wrap.DictWrapper(env)
         #env = wrap.MapWrapper(env)

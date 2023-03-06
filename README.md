@@ -50,8 +50,13 @@ python launch.py --configs defaults dmc
 python launch.py --configs defaults memmaze
 python launch.py --configs defaults miniworld
 ```
+
+***Note0*** Current image observation uses 64x64x3 pixel size.  
 ***Note1*** memmaze does not work on Windows  
 ***Note2*** python launch.py --configs defaults minigrid  # NOT WORKING YET  
+***Note3*** miniworld does not use gym_miniworld.wrappers (no map)  
+***Note4*** miniworld, changed the observation size (obs_height = 64, obs_width = 64). MiniWorldEnv.init   
+***Note5*** miniworld, no probe_model since no map is created (train only on image).  
 
 # From the original repository
 
