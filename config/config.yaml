@@ -1,0 +1,25 @@
+defaults:
+  - _self_
+  - model: dlf_poly_coef
+  #- signal: custom_response
+  #- optim: Adam
+
+plot:
+  live: True
+
+sequence_length: 1000
+num_iterations: 1000
+
+logger: 
+  log: False
+  kwargs:
+    project: IRFitting # Set the name of the project
+    entity: utokyo-dlf # Set the account name that will publish to the project
+  experiment_name: 
+    null
+
+
+internal_model: dlf # gru
+configs_used: defaults
+configs_env: miniworld
+hydradevice: cuda

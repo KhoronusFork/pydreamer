@@ -83,7 +83,7 @@ defaults:
   reward_decoder_layers: 4
   reward_decoder_categorical:
   terminal_decoder_layers: 4
-  rssmcellmode: dlf # gru
+  rssmcellmode: gru #dlf # gru
   
   # Probe
   probe_model: none
@@ -149,7 +149,7 @@ miniworld:
   map_channels: 14
   action_dim: 5 #3 #8 #3
   env_time_limit: 1_000
-  #generator_prefill_steps: 500  # debug
+  generator_prefill_steps: 100  # debug
   # Features
   image_key: image
   image_size: 64

@@ -13,23 +13,27 @@ from pydreamer.tools import (configure_logging, mlflow_log_params,
                              mlflow_init, print_once, read_yamls,
                              wandb_init)
 
-def launch():
+from omegaconf import OmegaConf
+import hydra
+
+@hydra.main(version_base="1.2", config_path='config', config_name='config')
+def launch(cfg) -> None:
+    print(OmegaConf.to_yaml(cfg))
+
     configure_logging('[launcher]')
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--configs', nargs='+', required=True)
-    args, remaining = parser.parse_known_args()
+    #parser = argparse.ArgumentParser()
+    #parser.add_argument('--configs', nargs='+', required=True)
+    #args, remaining = parser.parse_known_args()
 
     # Config from YAML
 
     conf = {}
-    configs = read_yamls('./config')
-    for name in args.configs:
-        if ',' in name:
-            for n in name.split(','):
-                conf.update(configs[n])
-        else:
-            conf.update(configs[name])
-
+    configs = read_yamls('./configdreamer')
+    print(f'configs:{configs}')
+    conf.update(configs[cfg.configs_used])
+    conf.update(configs[cfg.configs_env])
+    conf['device'] = cfg.hydradevice
+    print(f'conf1:{conf}')
     # Override config from command-line
 
     parser = argparse.ArgumentParser()
@@ -38,8 +42,9 @@ def launch():
         if type_ == bool:
             type_ = lambda x: bool(strtobool(x))
         parser.add_argument(f'--{key}', type=type_, default=value)
-    conf = parser.parse_args(remaining)
-    print(f'conf:{conf}')
+    conf = parser.parse_args('')#remaining)
+    print(f'conf2:{conf}')
+    return
 
     # Mlflow
 
@@ -60,6 +65,7 @@ def launch():
             p = launch_generator(
                 conf.env_id,
                 conf,
+                cfg,
                 save_uri=f'{artifact_uri}/episodes/{i}',
                 save_uri2=f'{artifact_uri}/episodes_eval/{i}',
                 num_steps=conf.n_env_steps // conf.env_action_repeat // conf.generator_workers,
@@ -80,6 +86,7 @@ def launch():
             p = launch_generator(
                 conf.env_id,
                 conf,
+                cfg,
                 f'{artifact_uri}/episodes/{i}',
                 num_steps=conf.n_env_steps // conf.env_action_repeat // conf.generator_workers,
                 limit_step_ratio=conf.limit_step_ratio / conf.generator_workers,
@@ -98,6 +105,7 @@ def launch():
             p = launch_generator(
                 conf.env_id_eval or conf.env_id,
                 conf,
+                cfg,
                 f'{artifact_uri}/episodes_eval/{i}',
                 worker_id=conf.generator_workers + i,
                 policy_main='network',
@@ -109,7 +117,7 @@ def launch():
 
     if belongs_to_worker('learner', 0):
         info('Launching learner')
-        p = launch_learner(conf)
+        p = launch_learner(conf, cfg)
         subprocesses.append(p)
 
     # Wait & watch
@@ -123,14 +131,15 @@ def launch():
             p.kill()  # Non-daemon processes (learner) need to be killed
 
 
-def launch_learner(conf):
-    p = Process(target=train.run, daemon=False, args=[conf])
+def launch_learner(conf, cfg_hydra):
+    p = Process(target=train.run, daemon=False, args=[conf,cfg_hydra])
     p.start()
     return p
 
 
 def launch_generator(env_id,
                      conf,
+                     cfg_hydra,
                      save_uri,
                      save_uri2=None,
                      policy_main='network',
@@ -159,6 +168,7 @@ def launch_generator(env_id,
                     num_steps_prefill=num_steps_prefill,
                     worker_id=worker_id,
                     model_conf=conf,
+                    cfg_hydra=cfg_hydra,
                     log_mlflow_metrics=log_mlflow_metrics,
                     split_fraction=split_fraction,
                     metrics_prefix=metrics_prefix,

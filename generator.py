@@ -39,6 +39,7 @@ def main(env_id='MiniGrid-MazeS11N-v0',
          steps_per_npz=1000,
          model_reload_interval=120,
          model_conf=dict(),
+         cfg_hydra=dict(),
          log_mlflow_metrics=True,
          split_fraction=0.0,
          metrics_prefix='agent',
@@ -76,11 +77,11 @@ def main(env_id='MiniGrid-MazeS11N-v0',
     if num_steps_prefill:
         # Start with prefill policy
         info(f'Prefill policy: {policy_prefill}')
-        policy = create_policy(policy_prefill, env, model_conf)
+        policy = create_policy(policy_prefill, env, model_conf, cfg_hydra)
         is_prefill_policy = True
     else:
         info(f'Policy: {policy_main}')
-        policy = create_policy(policy_main, env, model_conf)
+        policy = create_policy(policy_main, env, model_conf, cfg_hydra)
         is_prefill_policy = False
 
     # RUN
@@ -98,7 +99,7 @@ def main(env_id='MiniGrid-MazeS11N-v0',
 
         if is_prefill_policy and steps_saved >= num_steps_prefill:
             info(f'Switching to main policy: {policy_main}')
-            policy = create_policy(policy_main, env, model_conf)
+            policy = create_policy(policy_main, env, model_conf, cfg_hydra)
             is_prefill_policy = False
 
         # Load network
@@ -269,11 +270,11 @@ def main(env_id='MiniGrid-MazeS11N-v0',
     info('Generator done.')
 
 
-def create_policy(policy_type: str, env, model_conf):
+def create_policy(policy_type: str, env, model_conf, cfg_hydra):
     if policy_type == 'network':
         conf = model_conf
         if conf.model == 'dreamer':
-            model = Dreamer(conf)
+            model = Dreamer(conf, cfg_hydra)
         else:
             assert False, conf.model
         preprocess = Preprocessor(image_categorical=conf.image_channels if conf.image_categorical else None,

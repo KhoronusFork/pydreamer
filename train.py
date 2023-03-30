@@ -22,8 +22,9 @@ from pydreamer.preprocessing import Preprocessor, WorkerInfoPreprocess
 from pydreamer.tools import *
 
 
-def run(conf):
+def run(conf, cfg_hydra):
     print(f'conf:{conf}')
+    print(f'conf:{cfg_hydra}')
 
     configure_logging(prefix='[TRAIN]')
     mlrun = mlflow_init()
@@ -110,7 +111,7 @@ def run(conf):
     # MODEL
 
     if conf.model == 'dreamer':
-        model = Dreamer(conf)
+        model = Dreamer(conf, cfg_hydra)
     else:
         model: Dreamer = WorldModelProbe(conf)  # type: ignore
     model.to(device)

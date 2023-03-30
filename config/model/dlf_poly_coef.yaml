@@ -1,0 +1,11 @@
+name: DLF
+kwargs:
+  num_layers: 5
+  block:
+    type: ActivationBlock
+    kwargs:
+      filter:
+        type: PolyCoef
+        kwargs:
+          sys_order: 4
+          num_head: 5

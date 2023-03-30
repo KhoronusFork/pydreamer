@@ -1,0 +1,14 @@
+# @package _global_
+
+hydra:
+  mode: MULTIRUN
+  sweeper:
+    params:
+      +model.kwargs.num_layers: 1, 2, 4
+      +model.kwargs.block.type: ActivationBlock
+      +model.kwargs.block.kwargs.filter.type: PolyCoef
+      +model.kwargs.block.kwargs.filter.kwargs.sys_order: 2, 4, 8
+      +model.kwargs.block.kwargs.filter.kwargs.num_head: 2, 4, 8
+
+model:
+    name: DLF

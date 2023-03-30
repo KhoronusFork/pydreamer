@@ -18,7 +18,7 @@ try:
     #from dlf_tf import TFNet
     #from dlf_tf.utils import *
     sys.path.append('../../sigpro/dlf')
-    from dlf.model import *
+    import dlf.model
 except ImportError:
     print('DLF library not found')
 
@@ -28,9 +28,9 @@ import matplotlib.pyplot as plt
 
 class RSSMCore(nn.Module):
 
-    def __init__(self, rssmcellmode, embed_dim, action_dim, deter_dim, stoch_dim, stoch_discrete, hidden_dim, gru_layers, gru_type, layer_norm):
+    def __init__(self, cfg_hydra, rssmcellmode, embed_dim, action_dim, deter_dim, stoch_dim, stoch_discrete, hidden_dim, gru_layers, gru_type, layer_norm):
         super().__init__()
-        self.cell = RSSMCell(rssmcellmode, embed_dim, action_dim, deter_dim, stoch_dim, stoch_discrete, hidden_dim, gru_layers, gru_type, layer_norm)
+        self.cell = RSSMCell(cfg_hydra, rssmcellmode, embed_dim, action_dim, deter_dim, stoch_dim, stoch_discrete, hidden_dim, gru_layers, gru_type, layer_norm)
 
     def forward(self,
                 embed: Tensor,       # tensor(T, B, E)
@@ -107,7 +107,7 @@ class RSSMCore(nn.Module):
 
 class RSSMCell(nn.Module):
 
-    def __init__(self, rssmcellmode, embed_dim, action_dim, deter_dim, stoch_dim, stoch_discrete, hidden_dim, gru_layers, gru_type, layer_norm):
+    def __init__(self, cfg_hydra, rssmcellmode, embed_dim, action_dim, deter_dim, stoch_dim, stoch_discrete, hidden_dim, gru_layers, gru_type, layer_norm):
         super().__init__()
         self.stoch_dim = stoch_dim
         self.stoch_discrete = stoch_discrete
@@ -123,39 +123,33 @@ class RSSMCell(nn.Module):
         #print('rnn.GRUCellStack')
         #print('hidden_dim, deter_dim, gru_layers, gru_type:{}'.format((hidden_dim, deter_dim, gru_layers, gru_type)))
         #exit(0)
+
+        print(f'cfg_hydra:{cfg_hydra}')
+
         # GRU
-        if rssmcellmode == 'gru':
+        if cfg_hydra.internal_model == 'gru':
             self.rnnmodel = rnn.GRUCellStack(hidden_dim, deter_dim, gru_layers, gru_type)
         else:
-            # DLF
-            #count_parameters(self.rnnmodel)
-            #sys_order = 2
-            #num_head = 300#1000
+            #sys_order = 3
+            #num_head = 160
+            Features = hidden_dim # input_size
+            FeaturesOut = deter_dim # output_size
             #num_layers = 3
-            #L = 1
-            #Features = hidden_dim
             #bidirectional = False
-            #jitter = 0.00     
-            #FeaturesOut = deter_dim # 2048
             #sys_order_expected = FeaturesOut / (num_head * num_layers) # 2048 FeaturesOut in dreamer
             #print('sys_order_expected:{}'.format(sys_order_expected))
             #sys_order = int(sys_order_expected)
-            #period = L if L > sys_order else sys_order + 1
             #print('sys_order:{}'.format(sys_order))
-            #print('TFNet')
 
+            config_model_dlf = cfg_hydra.model
 
-            sys_order = 3
-            num_head = 160
-            Features = hidden_dim # input_size
-            FeaturesOut = deter_dim # output_size
-            num_layers = 3
-            bidirectional = False
-            sys_order_expected = FeaturesOut / (num_head * num_layers) # 2048 FeaturesOut in dreamer
-            print('sys_order_expected:{}'.format(sys_order_expected))
-            sys_order = int(sys_order_expected)
-            print('sys_order:{}'.format(sys_order))
-            if True:
+            num_layers = config_model_dlf['kwargs']['num_layers']
+            sys_order = config_model_dlf['kwargs']['block']['kwargs']['filter']['kwargs']['sys_order']
+            num_head = config_model_dlf['kwargs']['block']['kwargs']['filter']['kwargs']['num_head']
+            self.rnnmodel = getattr(dlf.model, config_model_dlf.name)(input_size = Features, output_size = FeaturesOut, **config_model_dlf.kwargs)
+            self.h_dlf = dict([(f'layer_{str(i)}', torch.rand(32, 1, sys_order*num_head).to('cuda:0')) for i in range(0, num_layers)])
+
+            if False:
                 self.rnnmodel = DLF(input_size = Features, 
                                     output_size = FeaturesOut, 
                                     num_layers = num_layers, 
@@ -216,7 +210,7 @@ class RSSMCell(nn.Module):
         #start_time = time.time()
         #print('forward za:{} in_h:{}'.format(za.shape, in_h.shape))
         #if isinstance(self.rnnmodel, TFNet) or isinstance(self.rnnmodel, DLF):
-        if isinstance(self.rnnmodel, DLF):
+        if isinstance(self.rnnmodel, dlf.model.DLF):
             if False:
                 if za.device != self.h_dlf['layer_0'].device: # move to CPU
                     self.h_dlf_za = dict() # change the device of hidden state to input
@@ -323,7 +317,7 @@ class RSSMCell(nn.Module):
         #start_time = time.time()
         #print('forward prior za:{} in_h:{}'.format(za.shape, in_h.shape))
         #if isinstance(self.rnnmodel, TFNet) or isinstance(self.rnnmodel, DLF):
-        if isinstance(self.rnnmodel, DLF):
+        if isinstance(self.rnnmodel, dlf.model.DLF):
             if False:
                 if za.device != self.h_dlf['layer_0'].device: # move to CPU
                     self.h_dlf_za = dict() # change the device of hidden state to input

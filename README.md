@@ -60,6 +60,12 @@ python launch.py --configs defaults miniworld
 ***Note4*** miniworld, changed the observation size (obs_height = 64, obs_width = 64). MiniWorldEnv.init   
 ***Note5*** miniworld, no probe_model since no map is created (train only on image).  
 
+
+### Temporary example for Hydra
+
+python launch.py ++hydradevice=cuda:1
+python launch.py -m model=dlf_sweep 'hydradevice=cuda:1'  
+
 # From the original repository
 
 Reimplementation of [DreamerV2](https://danijar.com/project/dreamerv2/) model-based RL algorithm in PyTorch. 

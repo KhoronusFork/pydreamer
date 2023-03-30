@@ -18,7 +18,7 @@ from .probes import *
 
 class Dreamer(nn.Module):
 
-    def __init__(self, conf):
+    def __init__(self, conf, cfg_hydra):
         super().__init__()
 
         print('Dreamer')
@@ -30,7 +30,7 @@ class Dreamer(nn.Module):
 
         # World model
 
-        self.wm = WorldModel(conf)
+        self.wm = WorldModel(conf, cfg_hydra)
 
         # Actor critic
 
@@ -234,7 +234,7 @@ class Dreamer(nn.Module):
 
 class WorldModel(nn.Module):
 
-    def __init__(self, conf):
+    def __init__(self, conf, cfg_hydra):
         super().__init__()
 
         self.deter_dim = conf.deter_dim
@@ -255,7 +255,8 @@ class WorldModel(nn.Module):
 
         # RSSM
 
-        self.core = RSSMCore(rssmcellmode=conf.rssmcellmode,
+        self.core = RSSMCore(cfg_hydra=cfg_hydra,
+                             rssmcellmode=conf.rssmcellmode,
                              embed_dim=self.encoder.out_dim,
                              action_dim=conf.action_dim,
                              deter_dim=conf.deter_dim,
