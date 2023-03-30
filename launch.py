@@ -53,7 +53,7 @@ def launch(cfg) -> None:
     artifact_uri = mlrun.info.artifact_uri
     mlflow_log_params(vars(conf))
 
-    wandb_init('experiment_' + conf.rssmcellmode, conf.env_id, '', conf.rssmcellmode, conf)
+    wandb_init('experiment_' + cfg.internal_model, conf.env_id, '', cfg.internal_model, conf)
 
     # Launch train+eval generators
 
