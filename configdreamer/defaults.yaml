@@ -149,7 +149,7 @@ miniworld:
   map_channels: 14
   action_dim: 5 #3 #8 #3
   env_time_limit: 1_000
-  generator_prefill_steps: 100  # debug
+  #generator_prefill_steps: 100  # debug
   # Features
   image_key: image
   image_size: 64

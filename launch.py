@@ -44,7 +44,6 @@ def launch(cfg) -> None:
         parser.add_argument(f'--{key}', type=type_, default=value)
     conf = parser.parse_args('')#remaining)
     print(f'conf2:{conf}')
-    return
 
     # Mlflow
 
