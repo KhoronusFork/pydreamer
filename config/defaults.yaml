@@ -83,6 +83,7 @@ defaults:
   reward_decoder_layers: 4
   reward_decoder_categorical:
   terminal_decoder_layers: 4
+  rssmcellmode: dlf # gru
   
   # Probe
   probe_model: none
@@ -107,7 +108,7 @@ defaults:
   target_interval_aux: 1000
 
   # Generator
-  generator_workers: 1 #8        # train+eval generators
+  generator_workers: 1 #1 #8        # train+eval generators
   generator_workers_train: 0  # train-only generators
   generator_workers_eval: 0   # eval-only generators
   generator_prefill_steps: 50_000
@@ -142,13 +143,13 @@ minigrid:
 
 miniworld:
   # Env
-  env_id: MiniWorld-Hallway-v0 #MiniWorld-ScavengerHuntSmall-v0
+  env_id: MiniWorld-PickupObjects-v0 #MiniWorld-Maze-v0 #MiniWorld-FourRooms-v0 #MiniWorld-CollectHealth-v0 #MiniWorld-ScavengerHuntSmall-v0 # MiniWorld-Hallway-v0
   env_no_terminal: True
-  map_size: 9
+  map_size: 12 #9
   map_channels: 14
-  action_dim: 3
+  action_dim: 5 #3 #8 #3
   env_time_limit: 1_000
-  generator_prefill_steps: 500  # debug
+  #generator_prefill_steps: 500  # debug
   # Features
   image_key: image
   image_size: 64
@@ -165,23 +166,24 @@ miniworld:
 
 miniworld_offline: # NG
   # Env
-  env_id: MiniWorld-ScavengerHuntSmall-v0
+  env_id: MiniWorld-Hallway-v0 #MiniWorld-ScavengerHuntSmall-v0
   env_no_terminal: True
   map_size: 9
   map_channels: 14
   action_dim: 3
+  env_time_limit: 1_000
   # Features
   image_key: image
   image_size: 64
   image_channels: 3
   image_categorical: False
-  map_key: map
-  map_categorical: True
+  #map_key: map
+  map_categorical: False #True
   reward_input: True
   # Model
-  probe_model: goals
-  cnn_depth: 32
-  data_workers: 6
+  #probe_model: goals
+  #cnn_depth: 32
+  #data_workers: 6
   # Offline
   allow_mid_reset: False
   reward_decoder_layers: 1  # faster
@@ -204,8 +206,8 @@ atari: #NG
   entropy: 0.001
 
 dmc:
-  env_id: DMC-manipulator_bring_peg # DMC-walker_run #DMC-quadruped_run
-  action_dim: 5 # 6 #12
+  env_id: DMC-walker_run #DMC-manipulator_bring_peg # DMC-walker_run #DMC-quadruped_run
+  action_dim: 6 #5 # 6 #12
   env_time_limit: 500  # =1000/action_repeat
   env_action_repeat: 2
   generator_workers: 1
@@ -245,7 +247,9 @@ vectorenv:
   image_encoder:
   image_decoder:
   env_time_limit: 500
-  generator_prefill_steps: 500 #50_000
+  generator_prefill_steps: 50_000
+  device: "cuda:0"
+
 
 minecraft:
   env_id: Embodied-minecraft_diamond
@@ -254,11 +258,11 @@ minecraft:
   clip_rewards: log1p
 
 memmaze:
-  env_id: memory_maze:MemoryMaze-9x9-v0 #memory_maze:MemoryMaze-9x9-v0
+  env_id: memory_maze:MemoryMaze-15x15-v0 #memory_maze:MemoryMaze-9x9-v0 #memory_maze:MemoryMaze-9x9-v0
   action_dim: 6
   entropy: 0.001
   device: "cuda:0"
-  generator_prefill_steps: 500 # debug
+  #generator_prefill_steps: 500 # debug
   
 procgen: # older gym
   env_id: procgen:procgen-coinrun-v0

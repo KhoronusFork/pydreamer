@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import mlflow
+import wandb
 import numpy as np
 import torch
 import torch.distributions as D
@@ -47,6 +48,7 @@ def main(env_id='MiniGrid-MazeS11N-v0',
 
     configure_logging(prefix=f'[GEN {worker_id}]', info_color=LogColorFormatter.GREEN)
     mlrun = mlflow_init()
+
     info(f'Generator {worker_id} started:'
          f' env={env_id}'
          f', n_steps={num_steps:,}'
@@ -152,6 +154,10 @@ def main(env_id='MiniGrid-MazeS11N-v0',
         fps = epsteps / (time.time() - timer + 1e-6)
         print_once('Episode data sample: ', {k: v.shape for k, v in data.items()})
 
+        di = dict()
+        di['test'] = 4.123
+        wandb.log(di)
+
         info(f"Episode recorded:"
              f"  steps: {epsteps}"
              f",  reward: {data['reward'].sum():.1f}"
@@ -212,6 +218,11 @@ def main(env_id='MiniGrid-MazeS11N-v0',
                 metrics_agg[f'{metrics_prefix}/return_max'] = metrics_agg_max[f'{metrics_prefix}/return']
                 metrics_agg['_timestamp'] = datetime.now().timestamp()
                 mlflow_log_metrics(metrics_agg, step=model_step)
+                try:
+                    wandb.log(metrics_agg)#, step=model_step)
+                    print(f'metrics_agg:{metrics_agg}')
+                except:
+                    print('wandb not initialized yet')
                 metrics_agg = defaultdict(list)
 
         # Save to npz

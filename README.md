@@ -32,6 +32,8 @@ Clone dlf and dlf_tf in sigpro folder (check rssm.py for path information).
 The current setup is defined in "config/defaults.yaml".  
 The environments are defined in pydreamer/envs.__init__, with specific packages in its own class (i.e. dmc.py). wrappers.py contains the definition of classic/mujoco environments.
 
+Be careful to make copies of default.txt, the program may pick the first copy (which may not be desired).  
+
 FYI: Older version of gym (no longer supported in this repository) [gym=0.19, pyglet==1.5.27]  
 
 ---

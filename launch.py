@@ -10,8 +10,8 @@ from typing import List
 import generator
 import train
 from pydreamer.tools import (configure_logging, mlflow_log_params,
-                             mlflow_init, print_once, read_yamls)
-
+                             mlflow_init, print_once, read_yamls,
+                             wandb_init)
 
 def launch():
     configure_logging('[launcher]')
@@ -39,6 +39,7 @@ def launch():
             type_ = lambda x: bool(strtobool(x))
         parser.add_argument(f'--{key}', type=type_, default=value)
     conf = parser.parse_args(remaining)
+    print(f'conf:{conf}')
 
     # Mlflow
 
@@ -47,6 +48,8 @@ def launch():
     mlrun = mlflow_init(wait_for_resume=not is_main_worker)
     artifact_uri = mlrun.info.artifact_uri
     mlflow_log_params(vars(conf))
+
+    wandb_init('experiment_' + conf.rssmcellmode, conf.env_id, '', conf.rssmcellmode, conf)
 
     # Launch train+eval generators
 

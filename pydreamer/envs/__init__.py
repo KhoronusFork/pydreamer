@@ -15,6 +15,8 @@ from .wrappers import *
 
 def create_env(env_id: str, no_terminal: bool, env_time_limit: int, env_action_repeat: int, worker_id: int):
 
+    print('create_env:{}'.format(env_id))
+
     if env_id.startswith('MiniGrid-'):
         from .minigrid import MiniGrid
         env = MiniGrid(env_id)

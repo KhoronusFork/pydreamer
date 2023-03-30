@@ -5,6 +5,7 @@ from logging import critical, debug, error, info, warning
 from typing import Iterator, Optional
 
 import mlflow
+import wandb
 import numpy as np
 import scipy.special
 import torch
@@ -22,9 +23,11 @@ from pydreamer.tools import *
 
 
 def run(conf):
+    print(f'conf:{conf}')
 
     configure_logging(prefix='[TRAIN]')
     mlrun = mlflow_init()
+
     artifact_uri = mlrun.info.artifact_uri
 
     torch.distributions.Distribution.set_default_validate_args(False)
@@ -65,6 +68,11 @@ def run(conf):
         while True:
             data_train_stats = DataSequential(MlflowEpisodeRepository(input_dirs), conf.batch_length, conf.batch_size, check_nonempty=False)
             mlflow_log_metrics({
+                'train/data_steps': data_train_stats.stats_steps,
+                'train/data_env_steps': data_train_stats.stats_steps * conf.env_action_repeat,
+                '_timestamp': datetime.now().timestamp(),
+            }, step=0)
+            wandb.log({
                 'train/data_steps': data_train_stats.stats_steps,
                 'train/data_env_steps': data_train_stats.stats_steps * conf.env_action_repeat,
                 '_timestamp': datetime.now().timestamp(),
@@ -279,6 +287,7 @@ def run(conf):
                              )
                         if steps > conf.log_interval:  # Skip the first batch, because the losses are very high and mess up y axis
                             mlflow_log_metrics(metrics, step=steps)
+                            wandb.log(metrics, step=steps)
                         metrics = defaultdict(list)
                         metrics_max = defaultdict(list)
 
@@ -423,6 +432,7 @@ def evaluate(prefix: str,
 
     metrics_eval = {f'{prefix}/{k}': np.array(v).mean() for k, v in metrics_eval.items()}
     mlflow_log_metrics(metrics_eval, step=steps)
+    wandb.log(metrics_eval, step=steps)
 
     if len(npz_datas) > 0:
         npz_data = {k: np.concatenate([d[k] for d in npz_datas], 1) for k in npz_datas[0]}

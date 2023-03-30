@@ -57,15 +57,22 @@ class GRUCellStack(nn.Module):
         layers.extend([cell(layer_size, layer_size) for _ in range(num_layers - 1)])
         self.layers = nn.ModuleList(layers)
 
-    def forward(self, input: Tensor, state: Tensor) -> Tensor:
-        input_states = state.chunk(self.num_layers, -1)
-        output_states = []
-        x = input
-        for i in range(self.num_layers):
-            x = self.layers[i](x, input_states[i])
-            output_states.append(x)
-        return torch.cat(output_states, -1)
-
+    def forward(self, input: Tensor, state: Optional[Tensor]) -> Tensor:
+        if state is not None:
+            input_states = state.chunk(self.num_layers, -1)
+            output_states = []
+            x = input
+            for i in range(self.num_layers):
+                x = self.layers[i](x, input_states[i])
+                output_states.append(x)
+            return torch.cat(output_states, -1)
+        else:
+            output_states = []
+            x = input
+            for i in range(self.num_layers):
+                x = self.layers[i](x)
+                output_states.append(x)
+            return torch.cat(output_states, -1)
 
 class GRUCell(jit.ScriptModule):
     """Reproduced regular nn.GRUCell, for reference"""

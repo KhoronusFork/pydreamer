@@ -13,6 +13,8 @@ from typing import Any, Dict, Optional, Tuple, Union
 import numpy as np
 import yaml
 
+import wandb
+
 try:
     from mlflow.store.artifact.artifact_repo import ArtifactRepository
 except:
@@ -367,3 +369,16 @@ def tensorboard_trace_handler(dir_name: str, worker_name: Optional[str] = None, 
         mlflow.log_artifact(path, artifact_path='profiling')
 
     return handler_fn
+
+
+def wandb_init(exp_prefix, env_name, dataset, name, variant):
+    import random
+    group_name = f'{exp_prefix}-{env_name}-{dataset}'
+    exp_name = f'{name}-{random.randint(int(1e5), int(1e6) - 1)}'
+    run = wandb.init(
+        name=exp_name,
+        group=group_name,
+        project='pydreamer',
+        config=variant,
+    )
+    return run

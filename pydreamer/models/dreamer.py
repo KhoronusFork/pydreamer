@@ -255,7 +255,8 @@ class WorldModel(nn.Module):
 
         # RSSM
 
-        self.core = RSSMCore(embed_dim=self.encoder.out_dim,
+        self.core = RSSMCore(rssmcellmode=conf.rssmcellmode,
+                             embed_dim=self.encoder.out_dim,
                              action_dim=conf.action_dim,
                              deter_dim=conf.deter_dim,
                              stoch_dim=conf.stoch_dim,
