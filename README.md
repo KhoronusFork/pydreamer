@@ -64,6 +64,7 @@ python launch.py --configs defaults miniworld
 ### Temporary example for Hydra
 
 python launch.py ++hydradevice=cuda:1
+python launch.py ++hydradevice=cuda:0 ++internal_model=gru
 python launch.py -m model=dlf_sweep 'hydradevice=cuda:1'  
 
 # From the original repository

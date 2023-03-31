@@ -149,6 +149,33 @@ miniworld:
   map_channels: 14
   action_dim: 5 #3 #8 #3
   env_time_limit: 1_000
+  n_steps: 50_000
+  n_env_steps: 100_000
+  #generator_prefill_steps: 100  # debug
+  # Features
+  image_key: image
+  image_size: 64
+  image_channels: 3
+  image_categorical: False
+  #map_key: map
+  map_categorical: False #True
+  reward_input: True
+  # Model
+  #probe_model: goals
+  #cnn_depth: 32
+  data_workers: 1
+  device: "cuda:1"
+
+miniworld2:
+  # Env
+  env_id: MiniWorld-FourRooms-v0 #MiniWorld-CollectHealth-v0 #MiniWorld-ScavengerHuntSmall-v0 # MiniWorld-Hallway-v0
+  env_no_terminal: True
+  map_size: 12 #9
+  map_channels: 14
+  action_dim: 3 #8 #3
+  env_time_limit: 1_000
+  n_steps: 50_000
+  n_env_steps: 100_000
   #generator_prefill_steps: 100  # debug
   # Features
   image_key: image
